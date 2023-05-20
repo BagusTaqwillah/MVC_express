@@ -1,59 +1,58 @@
-// data dumy 
-const buku=[
-    {id:1,judul:"Pelangi",penerbit:"Bagus"},
-    {id:2,judul:"Matahari",penerbit:"Dani"},
-    {id:3,judul:"Bintang",penerbit:"danang"},
-    {id:4,judul:"Bulan",penerbit:"Mulya"},
-    {id:5,judul:"Planet",penerbit:"Heri"},
-]
-const allBuku=(req,res)=>{
-    const data=buku
-    const result={
-        status:"ok",
-        data:buku
+
+const {Book} = require("../models")
+const allBuku= async(req,res)=>{
+    try {
+        const data = await Book.findAll()
+        const result={
+            status:"ok",
+            data:data
+        }
+        res.json(result)
+        
+    } catch (error) {
+        console.log(error,"eror data")
     }
-    res.json(result)
 }
 
 // hit data berdasarkan id
-const bukuByid=(req,res)=>{
-    const {id}=req.params
-    let data
-    // proses lopp data
-    for (let i = 0;i < buku.length;i++) {
-        // if statement id
-        if (buku[i].id === Number(id)) {
-            data = buku[i]
-        }  
+const bukuByid= async (req,res)=>{
+    try {
+        const {id}=req.params
+        const data=await Book.findByPk(id)
+        const result={
+            status:"ok",
+            data:data
+        }
+        if (data===null) {
+            return res.status(404).json({
+                status:"failed",
+                message:"data not found"
+            })
+        }
+        res.json(result)
+        
+    } catch (error) {
+        console.log(error,  `erorr`)
     }
-    // statement jika data id tidak ada
-    if (data === undefined) {
-        return res.status(404).json({
-            status:"failed",
-            message:"data not found"
-        })
-    }
-    // kembalikan jika data id data ada
-    res.json({
-        status:"ok",
-        buku:data
-    })
 }
 // add buku
-const addBuku=(req,res)=>{
-    const idLast=buku[buku.length - 1].id
-    const newBuku=idLast +1
-    var {judul,penerbit} =req.body
-    const dataBuku={
-        id:newBuku,
-        judul:judul,
-        penerbit:penerbit
+const addBuku= async (req,res)=>{
+    try {
+        const {judul,penerbit}=req.body
+        const newBuku=await Book.create({judul:judul,penerbit:penerbit})
+        res.status(201).json({
+            status:"ok",
+            message:"success di tambah",
+            data: {
+                id: newBuku.id,
+                judul: newBuku.judul,
+                penerbit: newBuku.penerbit,
+                createdAt: newBuku.createdAt,
+                updateAt: newBuku.updateAt,
+            }
+        })
+    } catch (error) {
+       console.log(error) 
     }
-    buku.push(dataBuku)
-    res.status(201).json({
-        status:"oke",
-        message:"success di tambah",
-        buku:dataBuku
-    })
 }
-module.exports={allBuku,bukuByid,addBuku,addBuku}
+module.exports={allBuku,bukuByid,addBuku}
